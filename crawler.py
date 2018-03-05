@@ -5,8 +5,9 @@ import random
 import time
 import subprocess
 import lxml.html as html
+from urllib.parse import urlencode
 
-QUERYSTRING = "http://archiveofourown.org/works/search?utf8=✓&commit=Search&work_search[revised_at]=%d-%d+months+ago&work_search[fandom_names]=%s"
+DOMAINSTRING = "http://archiveofourown.org/works/search?"
 
 FANDOMS = [
 	"http://archiveofourown.org/media/Anime%20*a*%20Manga/fandoms",
@@ -43,9 +44,8 @@ def get_fandoms(tree, minimum=100):
 
 def get_work_count(tree):
 	elem = tree.find(".//div[@id='main']/h3[@class='heading']")
-	if (elem is None):
-		return 0
-	return int(elem.text.strip().split(" ")[0])
+	if elem is None: return 0
+	else: return int(elem.text.strip().split(" ")[0])
 
 def populate_fandoms():
 	fandoms = []
@@ -61,11 +61,27 @@ def three_months():
 	for fandom in fandoms:
 		print(json.dumps(get_fandom_stats(0, 3, fandom)))
 
+def total_fandom_works():
+	fandoms = {}
+	for category in FANDOMS:
+		tree = parse(get(category))
+		for elem in tree.findall(".//ul[@class='tags index group']/li/a"):
+			fandoms[elem.text] = int(elem.tail.strip()[1:-1])
+	with open("total_works.json", "w") as fp:
+		fp.write(json.dumps(fandoms))
+
 def get_fandom_stats(start, end, fandom):
-	works = get_work_count(parse(get(QUERYSTRING % (start, end, fandom))))
+	Q = urlencode({
+		"utf8": "✔",
+		"commit": "Search",
+		"work_search[revised_at]": "%d-%d months ago" % (start, end),
+		"work_search[fandom_names]": fandom })
+	works = get_work_count(parse(get(DOMAINSTRING + Q)))
 	return { "months_ago": end, "fandom": fandom, "works": works }
 
 def main():
+	with open("fandoms.json") as fp:
+		fandoms = json.loads(fp.read())
 	for i in range(24):
 		for fandom in fandoms:
 			print(json.dumps(get_fandom_stats(i, i+1, fandom)))
@@ -74,3 +90,4 @@ if __name__ == "__main__":
 	if len(sys.argv) < 2: main()
 	elif sys.argv[1] == "-fandoms": populate_fandoms()
 	elif sys.argv[1] == "-three": three_months()
+	elif sys.argv[1] == "-total": total_fandom_works()
