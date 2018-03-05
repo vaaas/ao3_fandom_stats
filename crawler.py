@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import sys
 import json
-import urllib.request
 import random
 import time
+import subprocess
 import lxml.html as html
 
 QUERYSTRING = "http://archiveofourown.org/works/search?utf8=✓&commit=Search&work_search[revised_at]=%d-%d+months+ago&work_search[fandom_names]=%s"
@@ -20,16 +20,14 @@ FANDOMS = [
 	"http://archiveofourown.org/media/TV%20Shows/fandoms",
 	"http://archiveofourown.org/media/Video%20Games/fandoms" ]
 
-OPENER = urllib.request.build_opener()
-OPENER.addheaders = [('User-agent', 'Mozilla/5.0 (compatible; polite fandom work count collection)')]
-
 def err_print(*args): print(*args, file=sys.stderr)
 
 def get(url):
 	err_print(url)
 	time.sleep(random.random() + 0.5)
 	while True:
-		try: return OPENER.open(url, timeout=20).read()
+		try:
+			return subprocess.check_output(["curl", "-g", "--", url])
 		except: continue
 
 def parse(string):
