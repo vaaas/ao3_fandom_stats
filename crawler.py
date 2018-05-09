@@ -7,19 +7,19 @@ import subprocess
 import lxml.html as html
 from urllib.parse import urlencode
 
-DOMAINSTRING = "http://archiveofourown.org/works/search?"
+DOMAINSTRING = "https://archiveofourown.org/works/search?"
 
 FANDOMS = [
-	"http://archiveofourown.org/media/Anime%20*a*%20Manga/fandoms",
-	"http://archiveofourown.org/media/Books%20*a*%20Literature/fandoms",
-	"http://archiveofourown.org/media/Cartoons%20*a*%20Comics%20*a*%20Graphic%20Novels/fandoms",
-	"http://archiveofourown.org/media/Celebrities%20*a*%20Real%20People/fandoms",
-	"http://archiveofourown.org/media/Movies/fandoms",
-	"http://archiveofourown.org/media/Music%20*a*%20Bands/fandoms",
-	"http://archiveofourown.org/media/Other%20Media/fandoms",
-	"http://archiveofourown.org/media/Theater/fandoms",
-	"http://archiveofourown.org/media/TV%20Shows/fandoms",
-	"http://archiveofourown.org/media/Video%20Games/fandoms" ]
+	"https://archiveofourown.org/media/Anime%20*a*%20Manga/fandoms",
+	"https://archiveofourown.org/media/Books%20*a*%20Literature/fandoms",
+	"https://archiveofourown.org/media/Cartoons%20*a*%20Comics%20*a*%20Graphic%20Novels/fandoms",
+	"https://archiveofourown.org/media/Celebrities%20*a*%20Real%20People/fandoms",
+	"https://archiveofourown.org/media/Movies/fandoms",
+	"https://archiveofourown.org/media/Music%20*a*%20Bands/fandoms",
+	"https://archiveofourown.org/media/Other%20Media/fandoms",
+	"https://archiveofourown.org/media/Theater/fandoms",
+	"https://archiveofourown.org/media/TV%20Shows/fandoms",
+	"https://archiveofourown.org/media/Video%20Games/fandoms" ]
 
 def err_print(*args): print(*args, file=sys.stderr)
 
@@ -28,7 +28,7 @@ def get(url):
 	time.sleep(random.random() + 0.5)
 	while True:
 		try:
-			return subprocess.check_output(["curl", "-fg", "--", url])
+			return subprocess.check_output(["curl", "-Lfg", "--", url])
 		except:
                         time.sleep(1)
                         continue
@@ -55,7 +55,7 @@ def populate_fandoms():
 		fandoms.extend(get_fandoms(parse(get(category))))
 	fandoms = set(fandoms)
 	with open("fandoms.json", "w") as fp:
-		fp.write(json.dumps(list(fandoms)))
+		fp.write(json.dumps(list(fandoms), indent=4))
 
 def months(number):
 	with open("fandoms.json") as fp:
