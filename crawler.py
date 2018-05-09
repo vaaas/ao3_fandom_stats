@@ -28,8 +28,10 @@ def get(url):
 	time.sleep(random.random() + 0.5)
 	while True:
 		try:
-			return subprocess.check_output(["curl", "-g", "--", url])
-		except: continue
+			return subprocess.check_output(["curl", "-fg", "--", url])
+		except:
+                        time.sleep(1)
+                        continue
 
 def parse(string):
 	return html.fromstring(string)
@@ -55,11 +57,11 @@ def populate_fandoms():
 	with open("fandoms.json", "w") as fp:
 		fp.write(json.dumps(list(fandoms)))
 
-def three_months():
+def months(number):
 	with open("fandoms.json") as fp:
 		fandoms = json.loads(fp.read())
 	for fandom in fandoms:
-		print(json.dumps(get_fandom_stats(0, 3, fandom)))
+		print(json.dumps(get_fandom_stats(0, number, fandom)))
 
 def total_fandom_works():
 	fandoms = {}
@@ -88,6 +90,9 @@ def main():
 
 if __name__ == "__main__":
 	if len(sys.argv) < 2: main()
-	elif sys.argv[1] == "-fandoms": populate_fandoms()
-	elif sys.argv[1] == "-three": three_months()
-	elif sys.argv[1] == "-total": total_fandom_works()
+	elif sys.argv[1] == "-fandoms":
+                populate_fandoms()
+	elif sys.argv[1] == "-months" and len(sys.argv) >= 3:
+                months(int(sys.argv[2]))
+	elif sys.argv[1] == "-total":
+                total_fandom_works()
